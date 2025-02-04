@@ -1,0 +1,73 @@
+<script>
+  function getQueryParam(param) {
+    let params = new URLSearchParams(window.location.search);
+    return params.get(param);
+  }
+
+  function sendJSON(data) {
+    // Replace entire document with JSON response
+    document.open();
+    document.write(JSON.stringify(data, null, 2));
+    document.close();
+  }
+
+  function processImage(imageUrl) {
+    let img = new Image();
+    img.crossOrigin = "Anonymous"; // Avoid CORS issues
+    img.src = imageUrl;
+
+    // Handle image load error
+    img.onerror = function() {
+      sendJSON({ error: "Failed to load image. The image URL might be restricted by CORS." });
+    };
+
+    img.onload = function() {
+      let canvas = document.createElement("canvas");
+      let ctx = canvas.getContext("2d");
+
+      canvas.width = 32;
+      canvas.height = 32;
+
+      // Disable smoothing for pixel effect
+      ctx.imageSmoothingEnabled = false;
+
+      // Maintain aspect ratio
+      let scale = Math.min(32 / img.width, 32 / img.height);
+      let newWidth = img.width * scale;
+      let newHeight = img.height * scale;
+      let offsetX = (32 - newWidth) / 2;
+      let offsetY = (32 - newHeight) / 2;
+
+      // Draw the image resized to 32x32
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(img, offsetX, offsetY, newWidth, newHeight);
+
+      // Extract pixel data
+      let imageData = ctx.getImageData(0, 0, 32, 32).data;
+      let pixels = [];
+
+      for (let i = 0; i < imageData.length; i += 4) {
+        let r = imageData[i];
+        let g = imageData[i + 1];
+        let b = imageData[i + 2];
+        let a = imageData[i + 3];
+        pixels.push([r, g, b, a]); // Store as [R, G, B, A]
+      }
+
+      // Return JSON response
+      sendJSON({
+        width: 32,
+        height: 32,
+        pixels: pixels
+      });
+    };
+  }
+
+  // Get image URL from query and process it
+  let imageUrl = getQueryParam("imageurl");
+  if (imageUrl) {
+    processImage(imageUrl);
+  } else {
+    sendJSON({ error: "No image URL provided. Use ?imageurl=YOUR_IMAGE_URL" });
+  }
+</script>
