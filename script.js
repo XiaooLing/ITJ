@@ -1,7 +1,6 @@
 async function processImage(imageUrl) {
     return new Promise((resolve, reject) => {
         const img = new Image();
-        img.crossOrigin = "Anonymous"; // Allows cross-origin images
         img.src = imageUrl;
 
         img.onload = () => {
