@@ -35,23 +35,6 @@ async function processImage(imageUrl) {
 
             // Store the data in localStorage (for browser use)
             localStorage.setItem("imageData", JSON.stringify(jsonData));
-
-            // If you need to update the server, make an API call (example below)
-            fetch("/updateData", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify(jsonData)
-            }).then(response => {
-                if (response.ok) {
-                    resolve(jsonData);
-                } else {
-                    reject("Failed to update server with new data.");
-                }
-            }).catch(err => reject("Error updating server: " + err));
-        };
-
         img.onerror = () => reject("Failed to load image.");
     });
 }
